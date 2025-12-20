@@ -1,0 +1,44 @@
+<!-- 
+  This is a partial template. It is swapped into the #quiz-container div.
+-->
+<div class="bg-gray-800 p-6 sm:p-8 rounded-lg shadow-xl w-full">
+    
+    <!-- Question Text -->
+    <h2 class="text-xl sm:text-2xl font-semibold mb-6 text-gray-100">{{ question.text }}</h2>
+    
+    <!-- Answer Form -->
+    <form 
+        hx-post="/sessions/{{ session_id }}/answer"
+        hx-target="#quiz-container"
+        hx-swap="innerHTML"
+        class="space-y-4"
+    >
+        <!-- Hidden input to send the item_id with the answer -->
+        <input type="hidden" name="item_id" value="{{ question.item_id }}">
+
+        <!-- Radio Button Options -->
+        {% for key, value in question.options.items() %}
+        <label 
+            for="option-{{ key }}" 
+            class="flex items-center p-4 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 border-2 border-transparent has-[:checked]:border-blue-500 has-[:checked]:bg-gray-900 transition-all"
+        >
+            <input 
+                type="radio" 
+                id="option-{{ key }}" 
+                name="user_answer" 
+                value="{{ key }}" 
+                class="h-4 w-4 text-blue-600 bg-gray-900 border-gray-500 focus:ring-blue-500"
+                {% if loop.first %}required{% endif %}
+            >
+            <span class="ml-4 text-lg text-gray-300">{{ value }}</span>
+        </label>
+        {% endfor %}
+
+        <!-- Submit Button -->
+        <div class="pt-4">
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300">
+                Submit Answer
+            </button>
+        </div>
+    </form>
+</div>

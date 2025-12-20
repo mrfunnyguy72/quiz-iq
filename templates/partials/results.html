@@ -1,0 +1,31 @@
+<!--
+  This partial is shown when the test is finished.
+  It calculates a normalized grade based on the final theta.
+-->
+{% set normalized_grade = ((final_theta + 4) / 8 * 100) | round(0) | int %}
+
+<div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full text-center animate-fade-in">
+    <h1 class="text-3xl font-bold mb-4 text-white">Test Complete!</h1>
+
+    <p class="text-lg text-gray-400 mb-6">You have completed the assessment.</p>
+
+    <div class="my-8">
+        <p class="text-gray-300 text-sm uppercase font-semibold">Your Final Score</p>
+        <p class="text-6xl font-bold text-blue-400 my-2">{{ normalized_grade }}<span class="text-3xl text-gray-400">/100</span></p>
+        <p class="text-xs text-gray-500">(Based on final ability estimate: {{ final_theta | round(3) }})</p>
+    </div>
+
+    <a href="/" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
+        Back to Home
+    </a>
+</div>
+
+<style>
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+  }
+</style>

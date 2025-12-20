@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizIQ - Adaptive Testing</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- HTMX CDN -->
+    <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+    <style>
+        /* Simple style for radio buttons in dark mode */
+        input[type="radio"]:checked {
+            background-color: #3b82f6; /* bg-blue-600 */
+        }
+        input[type="radio"]:checked:hover {
+            background-color: #2563eb; /* bg-blue-700 */
+        }
+        input[type="radio"]:checked:focus {
+            box-shadow: 0 0 0 2px #1e40af; /* focus:ring-blue-800 */
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 flex flex-col min-h-screen">
+
+    <!-- Navigation Bar -->
+    <nav class="bg-gray-800 shadow-md">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="text-white font-bold text-xl">QuizIQ</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow container mx-auto p-4 sm:p-6 lg:p-8">
+        <div class="max-w-2xl mx-auto">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-center text-sm text-gray-400 py-4">
+        <p>&copy; 2025 QuizIQ. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>

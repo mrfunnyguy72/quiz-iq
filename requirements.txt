@@ -1,0 +1,8 @@
+SQLAlchemy==2.0.29
+scipy
+numpy
+pytest
+fastapi
+uvicorn[standard]
+jinja2
+python-multipart
