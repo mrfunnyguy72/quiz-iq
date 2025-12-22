@@ -3,43 +3,94 @@
 {% block content %}
 <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full">
     <h1 class="text-3xl font-bold mb-6 text-center text-white">Welcome to QuizIQ</h1>
+    
+    {% if message %}
+    <div class="bg-blue-500 text-white p-3 rounded-md mb-4 text-center">
+        {{ message }}
+    </div>
+    {% endif %}
+
+    {% if current_user %}
     <p class="text-center text-gray-400 mb-8">
-        Select a discipline and a theme to begin your adaptive test.
+        Hello, {{ current_user.username }}! Select a discipline and theme to begin your adaptive test.
     </p>
 
-    <!-- 
-        This form would be populated dynamically from the backend in a real app.
-        The user would select a discipline, and then HTMX could fetch the themes for that discipline.
-        For now, we'll assume a known user and theme for simplicity to start the session.
-    -->
     <form hx-post="/start-test" hx-push-url="true" hx-target="body">
-        
-        <!-- User Selection (Placeholder) -->
+        <!-- Discipline Selection -->
         <div class="mb-4">
-            <label for="user_id" class="block text-sm font-medium text-gray-300 mb-2">Select User</label>
-            <select id="user_id" name="user_id" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
-                <!-- In a real app, loop through users passed to the template -->
-                <option value="1">admin</option>
-                <option value="2">moderator</option>
-                <option value="3" selected>tester</option>
+            <label for="discipline_id" class="block text-sm font-medium text-gray-300 mb-2">Select Discipline</label>
+            <select id="discipline_id" name="discipline_id" 
+                    class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                    hx-get="/themes/" 
+                    hx-target="#theme-select-container"
+                    hx-indicator=".htmx-indicator">
+                <option value="">-- Select a Discipline --</option>
+                {% for discipline in disciplines %}
+                <option value="{{ discipline.id }}">{{ discipline.name }}</option>
+                {% endfor %}
             </select>
         </div>
 
-        <!-- Theme Selection (Placeholder) -->
-        <div class="mb-6">
+        <!-- Theme Selection (Dynamically Loaded) -->
+        <div id="theme-select-container" class="mb-6">
             <label for="theme_id" class="block text-sm font-medium text-gray-300 mb-2">Select Theme</label>
-            <select id="theme_id" name="theme_id" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
-                <!-- In a real app, loop through themes passed to the template -->
-                <option value="1">Algebra</option>
-                <option value="2" selected>Geometry</option>
-                <option value="3">Calculus</option>
-                <option value="4">Statistics</option>
+            <select id="theme_id" name="theme_id" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" disabled>
+                <option>-- Select a Discipline First --</option>
             </select>
         </div>
 
         <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300">
             Start Test
         </button>
+        <div class="htmx-indicator text-center text-white pt-4">Loading...</div>
     </form>
+    
+    <form hx-post="/logout" hx-push-url="true" hx-target="body" class="mt-4">
+        <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300">
+            Logout
+        </button>
+    </form>
+
+    {% else %}
+    <p class="text-center text-gray-400 mb-8">
+        Please log in or register to start an adaptive test.
+    </p>
+
+    <!-- Login Form -->
+    <h2 class="text-2xl font-bold mb-4 text-center text-white">Login</h2>
+    <form hx-post="/login" hx-push-url="true" hx-target="body" class="mb-8">
+        <div class="mb-4">
+            <label for="login_username" class="block text-sm font-medium text-gray-300 mb-2">Username</label>
+            <input type="text" id="login_username" name="username" required 
+                   class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        <div class="mb-6">
+            <label for="login_password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+            <input type="password" id="login_password" name="password" required 
+                   class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300">
+            Login
+        </button>
+    </form>
+
+    <!-- Register Form -->
+    <h2 class="text-2xl font-bold mb-4 text-center text-white">Register</h2>
+    <form hx-post="/register" hx-push-url="true" hx-target="body">
+        <div class="mb-4">
+            <label for="register_username" class="block text-sm font-medium text-gray-300 mb-2">Username</label>
+            <input type="text" id="register_username" name="username" required 
+                   class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        <div class="mb-6">
+            <label for="register_password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+            <input type="password" id="register_password" name="password" required 
+                   class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300">
+            Register
+        </button>
+    </form>
+    {% endif %}
 </div>
 {% endblock %}

@@ -34,6 +34,9 @@ class SessionStatusEnum(enum.Enum):
 
 # --- Model Definitions ---
 
+from password_utils import verify_password
+
+
 class User(Base):
     """Represents a user in the system."""
     __tablename__ = "users"
@@ -45,6 +48,10 @@ class User(Base):
 
     # One-to-many relationship with TestSession
     test_sessions: Mapped[List["TestSession"]] = relationship(back_populates="user")
+
+    def check_password(self, password: str) -> bool:
+        """Checks if the provided password matches the stored hash."""
+        return verify_password(password, self.password_hash)
 
     def __repr__(self) -> str:
         return f"<User(id={self.id}, username='{self.username}')>"

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full">
+    <h1 class="text-3xl font-bold mb-6 text-center text-white">User Profile: {{ user.username }}</h1>
+
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold mb-4 text-white">Test History</h2>
+        {% if test_sessions %}
+        <ul class="space-y-4">
+            {% for session in test_sessions %}
+            <li class="bg-gray-700 p-4 rounded-md shadow-sm">
+                <p class="text-gray-300"><strong>Session ID:</strong> {{ session.id }}</p>
+                <p class="text-gray-300"><strong>Theme:</strong> {{ session.theme.name }}</p>
+                <p class="text-gray-300"><strong>Status:</strong> {{ session.status.value }}</p>
+                <p class="text-gray-300"><strong>Final Theta:</strong> {{ "%.3f" % session.theta_estimate }}</p>
+                <p class="text-gray-300"><strong>Start Time:</strong> {{ session.start_time.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                {% if session.end_time %}
+                <p class="text-gray-300"><strong>End Time:</strong> {{ session.end_time.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                {% endif %}
+                <p class="text-gray-300"><strong>Questions Answered:</strong> {{ session.responses|length }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-gray-400">No test sessions found for this user.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

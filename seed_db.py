@@ -1,5 +1,4 @@
 import random
-import hashlib
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import select
 
@@ -16,13 +15,7 @@ from models import (
 # Create a session class
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# A simple salt for hashing. In a real application, use a unique salt per user.
-SALT = "quiz_iq_super_secret_salt"
-
-def hash_password(password: str) -> str:
-    """Hashes a password using SHA-256 with a salt."""
-    salted_password = password + SALT
-    return hashlib.sha256(salted_password.encode('utf-8')).hexdigest()
+from password_utils import hash_password
 
 def seed_database():
     """
@@ -41,7 +34,7 @@ def seed_database():
 
             if not user:
                 print(f"Creating user: {name}")
-                # The password is the same as the username, then hashed
+                # The password is the same as the username, then securely hashed
                 password_hash = hash_password(name)
                 new_user = User(username=name, password_hash=password_hash)
                 db.add(new_user)
