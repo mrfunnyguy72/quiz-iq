@@ -1,7 +1,7 @@
 import logging
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload, sessionmaker
@@ -18,7 +18,6 @@ from app.models.base import (
     User,
     engine,
 )
-from app.schemas.user import UserCreate
 
 # Configure basic logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

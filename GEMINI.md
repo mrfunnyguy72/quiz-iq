@@ -82,6 +82,10 @@ QuizIQ is a web-based adaptive testing system utilizing a 3-Parameter Logistic (
 
 ## 7. Change Log
 
+### December 23, 2025 - Confirmed Clean Lint
+
+*   **Linting**: Ran Ruff (`ruff check .`) and confirmed that all checks passed with no errors.
+
 ### December 23, 2025 - Bugfix: Dynamic User and Theme Lists
 
 *   **Bugfix**: Updated `templates/index.html` to dynamically generate the "Select User" and "Select Theme" dropdowns from the data passed to the template. This resolves an issue where newly registered users were not appearing in the list.
