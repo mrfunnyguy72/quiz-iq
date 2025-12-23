@@ -1,6 +1,7 @@
+from typing import Any, Dict, List, Tuple
+
 import numpy as np
 from scipy.optimize import minimize_scalar
-from typing import List, Dict, Tuple, Any
 
 # Define the scaling constant for the 3PL model
 D = 1.702

@@ -1,0 +1,11 @@
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+# Enable Pyflakes, pycodestyle, and isort rules
+select = ["E", "F", "I"]
+ignore = ["E501"]
+
+[tool.ruff.lint.mccabe]
+# Flag functions with a complexity score greater than 10
+max-complexity = 10

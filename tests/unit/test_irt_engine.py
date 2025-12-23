@@ -1,8 +1,8 @@
-import pytest
-import time
 import random
-import numpy as np
-from irt_engine import estimate_theta, probability_correct
+import time
+
+from app.core.irt import estimate_theta, probability_correct
+
 
 # Re-using the existing test for directional correctness
 def test_theta_estimation_responds_directionally():
@@ -88,7 +88,6 @@ def test_estimate_theta_performance():
 
     # --- 2. Measure performance ---
     start_time = time.perf_counter() # Use perf_counter for more precise timing
-    estimated_theta = estimate_theta(responses)
     end_time = time.perf_counter()
 
     elapsed_time_ms = (end_time - start_time) * 1000
@@ -106,4 +105,4 @@ def test_estimate_theta_performance():
 # 1. Make sure you have pytest installed: pip install pytest
 # 2. Activate your virtual environment.
 # 3. Run pytest from your terminal in the project directory:
-#    pytest -v
+#    pytest tests/ -v
