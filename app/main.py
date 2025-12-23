@@ -1,12 +1,13 @@
 import logging
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload, sessionmaker
 
 from app.core import irt as irt_engine
+from app.core.security import get_password_hash
 from app.models.base import (
     Base,
     Item,
@@ -17,6 +18,7 @@ from app.models.base import (
     User,
     engine,
 )
+from app.schemas.user import UserCreate
 
 # Configure basic logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -98,6 +100,37 @@ async def start_test(
 
     # Return the test page, which will then use HTMX to fetch the first question
     return templates.TemplateResponse("test.html", {"request": request, "session_id": new_session.id})
+
+
+@app.get("/register", response_class=HTMLResponse, tags=["Frontend"])
+async def register_form(request: Request):
+    """Serves the user registration page."""
+    return templates.TemplateResponse("register.html", {"request": request})
+
+
+@app.post("/register", response_class=HTMLResponse, tags=["Frontend"])
+async def register_user(
+    request: Request,
+    username: str = Form(...),
+    password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """Creates a new user and returns a confirmation message."""
+    # Check if user already exists
+    user = db.execute(select(User).where(User.username == username)).scalars().first()
+    if user:
+        return HTMLResponse("<div class='text-red-500'>Username already exists.</div>")
+
+    # Create new user
+    hashed_password = get_password_hash(password)
+    new_user = User(username=username, password_hash=hashed_password)
+    db.add(new_user)
+    db.commit()
+
+    response = HTMLResponse("<div class='text-green-500'>User created successfully! Redirecting...</div>")
+    response.headers["HX-Redirect"] = "/"
+    return response
+
 
 # --- HTMX Partial Endpoints ---
 

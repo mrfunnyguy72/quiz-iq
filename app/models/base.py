@@ -5,12 +5,14 @@ from typing import List
 from sqlalchemy import (
     JSON,
     Boolean,
+    Column,
     DateTime,
     Enum,
     Float,
     ForeignKey,
     Integer,
     String,
+    Table,
     Text,
     create_engine,
     func,
@@ -31,6 +33,22 @@ class SessionStatusEnum(enum.Enum):
     terminated = "terminated"
 
 
+class UserRoleEnum(enum.Enum):
+    """Enum for user roles."""
+    ADMIN = "admin"
+    MODERATOR = "moderator"
+    STUDENT = "student"
+
+
+# --- Association Table for Moderator-Theme relationship ---
+moderator_themes = Table(
+    "moderator_themes",
+    Base.metadata,
+    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
+    Column("theme_id", Integer, ForeignKey("themes.id"), primary_key=True),
+)
+
+
 # --- Model Definitions ---
 
 class User(Base):
@@ -40,13 +58,19 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    role: Mapped[UserRoleEnum] = mapped_column(Enum(UserRoleEnum), default=UserRoleEnum.STUDENT, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     # One-to-many relationship with TestSession
     test_sessions: Mapped[List["TestSession"]] = relationship(back_populates="user")
 
+    # Many-to-many relationship for moderators
+    moderated_themes: Mapped[List["Theme"]] = relationship(
+        secondary=moderator_themes, back_populates="moderators"
+    )
+
     def __repr__(self) -> str:
-        return f"<User(id={self.id}, username='{self.username}')>"
+        return f"<User(id={self.id}, username='{self.username}', role='{self.role.value}')>"
 
 
 class Discipline(Base):
@@ -77,6 +101,11 @@ class Theme(Base):
     # One-to-many relationships
     items: Mapped[List["Item"]] = relationship(back_populates="theme")
     test_sessions: Mapped[List["TestSession"]] = relationship(back_populates="theme")
+
+    # Many-to-many relationship with User (moderators)
+    moderators: Mapped[List["User"]] = relationship(
+        secondary=moderator_themes, back_populates="moderated_themes"
+    )
 
     def __repr__(self) -> str:
         return f"<Theme(id={self.id}, name='{self.name}')>"
@@ -170,7 +199,20 @@ engine = create_engine(DATABASE_URL, echo=False)
 def create_db_and_tables():
     """Creates the database and all necessary tables."""
     print("Dropping all existing tables...")
-    Base.metadata.drop_all(engine)
+    # A more robust way to drop tables, especially with SQLite
+    try:
+        Base.metadata.drop_all(engine)
+        print("All tables dropped successfully.")
+    except Exception as e:
+        print(f"An error occurred during drop_all: {e}")
+        print("Attempting to drop tables individually...")
+        for tbl in reversed(Base.metadata.sorted_tables):
+            try:
+                tbl.drop(engine)
+                print(f"  - Dropped table {tbl.name}")
+            except Exception as e_inner:
+                print(f"  - Error dropping table {tbl.name}: {e_inner}")
+
     print("Creating new database and tables...")
     Base.metadata.create_all(engine)
     print("Database and tables created successfully.")

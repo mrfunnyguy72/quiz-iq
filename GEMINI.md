@@ -82,6 +82,40 @@ QuizIQ is a web-based adaptive testing system utilizing a 3-Parameter Logistic (
 
 ## 7. Change Log
 
+### December 23, 2025 - Bugfix: Dynamic User and Theme Lists
+
+*   **Bugfix**: Updated `templates/index.html` to dynamically generate the "Select User" and "Select Theme" dropdowns from the data passed to the template. This resolves an issue where newly registered users were not appearing in the list.
+
+### December 23, 2025 - Bugfix: Registration Redirect
+
+*   **Bugfix**: Updated the `/register` endpoint to return a response with an `HX-Redirect` header. This redirects the user to the home page after a successful registration, allowing them to see the newly registered user in the dropdown list.
+
+### December 23, 2025 - Database Seeding and Hashing Fixes
+
+*   **Database Seeding**:
+    *   Replaced `bcrypt` with `argon2-cffi` to resolve a password hashing issue during database seeding.
+    *   Updated the `create_db_and_tables` function in `app/models/base.py` to be more robust, ensuring tables are dropped correctly before creation.
+
+### December 23, 2025 - Bugfix: Corrected Typo in User Model
+
+*   **Bugfix**: Corrected a typo in `app/models/base.py` from `Mated` to `Mapped` in the `moderated_themes` relationship of the `User` model, which was causing a `NameError` on application startup.
+
+### December 23, 2025 - User Roles, Registration, and Password Hashing
+
+*   **User Model**:
+    *   Added a `role` column to the `User` model with an `Enum` for `ADMIN`, `MODERATOR`, and `STUDENT`.
+    *   Added a `moderated_themes` many-to-many relationship to allow `MODERATOR` roles to be restricted to specific themes.
+*   **Password Hashing**:
+    *   Replaced the insecure `hashlib` implementation with `passlib` and `bcrypt`.
+    *   Created `app/core/security.py` to manage password hashing and verification.
+    *   Added `passlib` and `bcrypt` to `requirements.txt`.
+*   **User Registration**:
+    *   Created a new FastAPI endpoint at `/register` to handle user registration.
+    *   Created an HTMX-powered registration form at `templates/register.html`.
+    *   Added a link to the registration page on the main `index.html` page.
+*   **Database Seeding**:
+    *   Updated `seed_db.py` to use the new password hashing and to assign roles to the default users.
+
 ### December 23, 2025 - Added Ruff to Requirements and Confirmed Clean Lint
 
 *   **Ruff Integration**:

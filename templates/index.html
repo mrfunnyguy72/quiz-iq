@@ -14,26 +14,23 @@
     -->
     <form hx-post="/start-test" hx-push-url="true" hx-target="body">
         
-        <!-- User Selection (Placeholder) -->
+        <!-- User Selection -->
         <div class="mb-4">
             <label for="user_id" class="block text-sm font-medium text-gray-300 mb-2">Select User</label>
             <select id="user_id" name="user_id" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
-                <!-- In a real app, loop through users passed to the template -->
-                <option value="1">admin</option>
-                <option value="2">moderator</option>
-                <option value="3" selected>tester</option>
+                {% for user in users %}
+                <option value="{{ user.id }}">{{ user.username }}</option>
+                {% endfor %}
             </select>
         </div>
 
-        <!-- Theme Selection (Placeholder) -->
+        <!-- Theme Selection -->
         <div class="mb-6">
             <label for="theme_id" class="block text-sm font-medium text-gray-300 mb-2">Select Theme</label>
             <select id="theme_id" name="theme_id" class="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
-                <!-- In a real app, loop through themes passed to the template -->
-                <option value="1">Algebra</option>
-                <option value="2" selected>Geometry</option>
-                <option value="3">Calculus</option>
-                <option value="4">Statistics</option>
+                {% for theme in themes %}
+                <option value="{{ theme.id }}">{{ theme.name }}</option>
+                {% endfor %}
             </select>
         </div>
 
@@ -41,5 +38,9 @@
             Start Test
         </button>
     </form>
+
+    <div class="text-center mt-4">
+        <a href="/register" class="text-blue-400 hover:text-blue-300">Register a new user</a>
+    </div>
 </div>
 {% endblock %}

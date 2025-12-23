@@ -1,28 +1,21 @@
-import hashlib
 import random
 
 from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 
 # Import the models and the engine from your existing models.py file
+from app.core.security import get_password_hash
 from app.models.base import (
     Discipline,
     Item,
     Theme,
     User,
+    UserRoleEnum,
     engine,
 )
 
 # Create a session class
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# A simple salt for hashing. In a real application, use a unique salt per user.
-SALT = "quiz_iq_super_secret_salt"
-
-def hash_password(password: str) -> str:
-    """Hashes a password using SHA-256 with a salt."""
-    salted_password = password + SALT
-    return hashlib.sha256(salted_password.encode('utf-8')).hexdigest()
 
 def seed_database():
     """
@@ -34,16 +27,20 @@ def seed_database():
 
     try:
         # --- 0. Ensure Users exist ---
-        user_names = ["admin", "moderator", "tester"]
-        for name in user_names:
+        users_to_create = {
+            "admin": UserRoleEnum.ADMIN,
+            "moderator": UserRoleEnum.MODERATOR,
+            "tester": UserRoleEnum.STUDENT,
+        }
+        for name, role in users_to_create.items():
             stmt = select(User).where(User.username == name)
             user = db.execute(stmt).scalars().first()
 
             if not user:
-                print(f"Creating user: {name}")
+                print(f"Creating user: {name} with role {role.value}")
                 # The password is the same as the username, then hashed
-                password_hash = hash_password(name)
-                new_user = User(username=name, password_hash=password_hash)
+                password_hash = get_password_hash(name)
+                new_user = User(username=name, password_hash=password_hash, role=role)
                 db.add(new_user)
             else:
                 print(f"User '{name}' already exists.")
