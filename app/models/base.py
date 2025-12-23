@@ -3,20 +3,19 @@ from datetime import datetime
 from typing import List
 
 from sqlalchemy import (
-    create_engine,
-    Column,
-    Integer,
-    String,
-    Float,
-    Boolean,
-    ForeignKey,
     JSON,
-    Text,
+    Boolean,
     DateTime,
     Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    create_engine,
     func,
 )
-from sqlalchemy.orm import declarative_base, relationship, Mapped, mapped_column
+from sqlalchemy.orm import Mapped, declarative_base, mapped_column, relationship
 
 # --- Declarative Base ---
 # The base class which our ORM models will inherit from.

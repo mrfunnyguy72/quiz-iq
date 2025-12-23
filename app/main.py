@@ -1,31 +1,26 @@
 import logging
-from fastapi import FastAPI, Depends, HTTPException, Request, Form
+
+from fastapi import Depends, FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy.orm import Session, joinedload
-from typing import List, Dict
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session, joinedload, sessionmaker
+
+from app.core import irt as irt_engine
+from app.models.base import (
+    Base,
+    Item,
+    Response,
+    SessionStatusEnum,
+    TestSession,
+    Theme,
+    User,
+    engine,
+)
 
 # Configure basic logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-
-# Import database engine, models, and IRT logic
-from models import (
-    engine,
-    Base,
-    User,
-    Theme,
-    Item,
-    TestSession,
-    Response,
-    SessionStatusEnum,
-)
-from sqlalchemy import select, func
-from sqlalchemy.orm import sessionmaker
-import irt_engine
-
-# --- Pydantic Schemas (still useful for validation if needed, but not for primary response) ---
-from pydantic import BaseModel
 
 logger.info("main.py: Starting module import and global execution...")
 
@@ -124,7 +119,7 @@ async def get_next_question_htmx(session_id: int, request: Request, db: Session 
     answered_item_ids = db.execute(select(Response.item_id).where(Response.session_id == session_id)).scalars().all()
     available_items = db.execute(select(Item).where(
         Item.theme_id == session.theme_id,
-        Item.is_active == True,
+        Item.is_active,
         Item.id.notin_(answered_item_ids)
     )).scalars().all()
 

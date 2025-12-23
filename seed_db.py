@@ -1,16 +1,16 @@
-import random
 import hashlib
-from sqlalchemy.orm import sessionmaker
+import random
+
 from sqlalchemy import select
+from sqlalchemy.orm import sessionmaker
 
 # Import the models and the engine from your existing models.py file
-from models import (
-    engine,
-    Base,
+from app.models.base import (
     Discipline,
-    Theme,
     Item,
+    Theme,
     User,
+    engine,
 )
 
 # Create a session class
@@ -152,7 +152,7 @@ def seed_database():
 if __name__ == "__main__":
     # The create_db_and_tables function from models.py will drop and recreate
     # all tables, ensuring the schema is always up-to-date with the models.
-    from models import create_db_and_tables
+    from app.models.base import create_db_and_tables
     
     print("Recreating database schema to ensure it is up-to-date...")
     create_db_and_tables()
