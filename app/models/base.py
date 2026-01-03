@@ -40,6 +40,18 @@ class UserRoleEnum(enum.Enum):
     STUDENT = "student"
 
 
+class ItemTypeEnum(enum.Enum):
+    """Enum for the type of question."""
+    MULTIPLE_CHOICE = "multiple_choice"
+    OPEN_ENDED = "open_ended"
+
+
+class MediaTypeEnum(enum.Enum):
+    """Enum for media type."""
+    TEXT = "text"
+    HTML = "html"
+
+
 # --- Association Table for Moderator-Theme relationship ---
 moderator_themes = Table(
     "moderator_themes",
@@ -120,8 +132,15 @@ class Item(Base):
     
     # Core question components
     question_text: Mapped[str] = mapped_column(Text, nullable=False)
-    options: Mapped[dict] = mapped_column(JSON, nullable=False)
-    correct_option: Mapped[str] = mapped_column(String(255), nullable=False)
+    
+    # New fields for question type and media
+    type: Mapped[ItemTypeEnum] = mapped_column(Enum(ItemTypeEnum), default=ItemTypeEnum.MULTIPLE_CHOICE, nullable=False)
+    media_type: Mapped[MediaTypeEnum] = mapped_column(Enum(MediaTypeEnum), default=MediaTypeEnum.TEXT, nullable=False)
+    media_url: Mapped[str] = mapped_column(String(255), nullable=True)
+
+    options: Mapped[dict] = mapped_column(JSON, nullable=True)  # Null for open-ended
+    correct_option: Mapped[dict] = mapped_column(JSON, nullable=False)
+
 
     # IRT (Item Response Theory) parameters
     a_discrim: Mapped[float] = mapped_column(Float, nullable=False, comment="Item discrimination (a-parameter)")
@@ -137,7 +156,7 @@ class Item(Base):
     responses: Mapped[List["Response"]] = relationship(back_populates="item")
 
     def __repr__(self) -> str:
-        return f"<Item(id={self.id}, b_diff={self.b_diff:.2f})>"
+        return f"<Item(id={self.id}, type='{self.type.value}', b_diff={self.b_diff:.2f})>"
 
 
 class TestSession(Base):

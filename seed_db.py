@@ -8,6 +8,8 @@ from app.core.security import get_password_hash
 from app.models.base import (
     Discipline,
     Item,
+    ItemTypeEnum,
+    MediaTypeEnum,
     Theme,
     User,
     UserRoleEnum,
@@ -89,55 +91,152 @@ def seed_database():
         print("Checking for existing items...")
         item_count = db.query(Item).count()
 
-        if item_count >= 10:
-            print("Database already contains 10 or more items. Seeding is not required.")
+        if item_count > 0:
+            print("Database already contains items. Skipping seeding.")
             return
 
-        print("Generating and adding 10000 sample IRT questions...")
-        for i in range(10000):
-            # Choose a random theme for the question
+        print("Generating and adding special and random sample IRT questions...")
+        
+        # --- Add a few specific, interesting questions ---
+
+        # 1. Open-ended algebra question (existing)
+        db.add(Item(
+            theme_id=themes[0].id, # Algebra
+            question_text="Solve for x in the equation: 2x + 10 = 20",
+            type=ItemTypeEnum.OPEN_ENDED,
+            correct_option=["5"],
+            a_discrim=1.2, b_diff=0.5, c_guess=0.1, is_active=True
+        ))
+        print("  - Added: Open-ended algebra question.")
+
+        # 2. HTML Formatted geometry question (single correct answer)
+        db.add(Item(
+            theme_id=themes[1].id, # Geometry
+            question_text="What is the area of a circle with radius <i>r</i>?",
+            type=ItemTypeEnum.MULTIPLE_CHOICE,
+            media_type=MediaTypeEnum.HTML,
+            options={"A": "&pi;r<sup>2</sup>", "B": "2&pi;r", "C": "r<sup>2</sup>"},
+            correct_option=["A"],
+            a_discrim=1.0, b_diff=-0.5, c_guess=0.2, is_active=True
+        ))
+        print("  - Added: HTML-formatted geometry question.")
+
+        # 3. Multiple Choice Calculus Question (single correct answer)
+        db.add(Item(
+            theme_id=themes[2].id, # Calculus
+            question_text="What is the derivative of x<sup>2</sup>?",
+            type=ItemTypeEnum.MULTIPLE_CHOICE,
+            options={"A": "x", "B": "2x", "C": "x<sup>3</sup>/3", "D": "2"},
+            correct_option=["B"],
+            a_discrim=1.5, b_diff=1.0, c_guess=0.15, is_active=True
+        ))
+        print("  - Added: Multiple Choice Calculus question.")
+
+        # 4. Open-ended Statistics Question
+        db.add(Item(
+            theme_id=themes[3].id, # Statistics
+            question_text="What is the median of the following set of numbers: 10, 5, 20, 15, 30?",
+            type=ItemTypeEnum.OPEN_ENDED,
+            correct_option=["15"],
+            a_discrim=1.0, b_diff=0.8, c_guess=0.05, is_active=True
+        ))
+        print("  - Added: Open-ended Statistics question.")
+
+        # 5. Multiple Choice Algebra Question (single correct answer)
+        db.add(Item(
+            theme_id=themes[0].id, # Algebra
+            question_text="If 3x - 5 = 10, what is x?",
+            type=ItemTypeEnum.MULTIPLE_CHOICE,
+            options={"A": "3", "B": "5", "C": "10", "D": "15"},
+            correct_option=["B"],
+            a_discrim=1.1, b_diff=0.2, c_guess=0.0, is_active=True
+        ))
+        print("  - Added: Another Multiple Choice Algebra question.")
+
+        # 6. Open-ended Geometry Question
+        db.add(Item(
+            theme_id=themes[1].id, # Geometry
+            question_text="How many degrees are in a triangle?",
+            type=ItemTypeEnum.OPEN_ENDED,
+            correct_option=["180"],
+            a_discrim=0.9, b_diff=0.0, c_guess=0.0, is_active=True
+        ))
+        print("  - Added: Another Open-ended Geometry question.")
+
+        # 7. New Question with Multiple Correct Answers
+        db.add(Item(
+            theme_id=themes[3].id, # Statistics
+            question_text="Which of the following numbers are prime? (Select all that apply)",
+            type=ItemTypeEnum.MULTIPLE_CHOICE,
+            options={"A": "2", "B": "4", "C": "7", "D": "9"},
+            correct_option=["A", "C"],
+            a_discrim=1.7, b_diff=1.2, c_guess=0.1, is_active=True
+        ))
+        print("  - Added: Multiple choice question with multiple correct answers.")
+        
+        # --- Generate a larger set of random questions (increased from 50 to 100) ---
+        print("\nGenerating 100 random questions (50 multiple choice, 50 open-ended)...")
+        for i in range(100): 
             selected_theme = random.choice(themes)
+            a_discrim = round(random.uniform(0.5, 2.5), 2)
+            b_diff = round(random.uniform(-2.0, 2.0), 2)
+            c_guess = round(random.uniform(0.0, 0.25), 2)
 
-            # Generate random IRT parameters within a plausible range
-            a_discrim = round(random.uniform(0.5, 2.5), 2)  # Discrimination
-            b_diff = round(random.uniform(-2.0, 2.0), 2) # Difficulty
-            c_guess = round(random.uniform(0.0, 0.25), 2)  # Guessing factor
+            if i % 2 == 0: # 50% chance for multiple choice
+                # Multiple Choice Question
+                num1 = random.randint(1, 20)
+                num2 = random.randint(1, 20)
+                operator = random.choice(['+', '-', '*'])
+                correct_ans_val = eval(f"{num1} {operator} {num2}")
 
-            # Create simple math questions
-            num1 = random.randint(1, 20)
-            num2 = random.randint(1, 20)
-            correct_ans_val = num1 + num2
-            
-            # Create plausible distractors
-            options = {
-                "A": str(correct_ans_val),
-                "B": str(correct_ans_val + random.randint(1, 5)),
-                "C": str(abs(correct_ans_val - random.randint(1, 5))),
-                "D": str(random.randint(1, 50)),
-            }
-            # Shuffle options to randomize correct answer position
-            shuffled_keys = list(options.keys())
-            random.shuffle(shuffled_keys)
-            shuffled_options = {key: options[key] for key in shuffled_keys}
+                options = {
+                    "A": str(correct_ans_val),
+                    "B": str(correct_ans_val + random.randint(1, 5)),
+                    "C": str(correct_ans_val - random.randint(1, 5)),
+                    "D": str(random.randint(1, 50)),
+                }
+                
+                # Ensure options are unique
+                while len(set(options.values())) != len(options):
+                    options["B"] = str(correct_ans_val + random.randint(1, 5))
+                    options["C"] = str(correct_ans_val - random.randint(1, 5))
+                    options["D"] = str(random.randint(1, 50))
+                
+                options_list = list(options.items())
+                random.shuffle(options_list)
+                shuffled_options = dict(options_list)
+                
+                correct_option_keys = [key for key, val in shuffled_options.items() if val == str(correct_ans_val)]
 
-            correct_option_key = next(key for key, val in shuffled_options.items() if val == str(correct_ans_val))
-
-            item = Item(
-                theme_id=selected_theme.id,
-                question_text=f"What is {num1} + {num2}?",
-                options=shuffled_options,
-                correct_option=correct_option_key,
-                a_discrim=a_discrim,
-                b_diff=b_diff,
-                c_guess=c_guess,
-                is_active=True,
-            )
+                item = Item(
+                    theme_id=selected_theme.id,
+                    question_text=f"What is {num1} {operator} {num2}?",
+                    type=ItemTypeEnum.MULTIPLE_CHOICE,
+                    options=shuffled_options,
+                    correct_option=correct_option_keys,
+                    a_discrim=a_discrim,
+                    b_diff=b_diff,
+                    c_guess=c_guess,
+                    is_active=True,
+                )
+            else:
+                # Open-Ended Question
+                num = random.randint(1, 10)
+                item = Item(
+                    theme_id=selected_theme.id,
+                    question_text=f"What is {num} squared?",
+                    type=ItemTypeEnum.OPEN_ENDED,
+                    correct_option=[str(num * num)],
+                    a_discrim=a_discrim,
+                    b_diff=b_diff,
+                    c_guess=c_guess,
+                    is_active=True,
+                )
             db.add(item)
-            print(f"  - Added: Item {i+1} for theme '{selected_theme.name}' (b={b_diff})")
 
-        # Commit all the new items to the database
+        # Commit all the new items
         db.commit()
-        print("\nSuccessfully seeded the database with 10 sample questions.")
+        print("\nSuccessfully seeded the database with special and random questions.")
 
     except Exception as e:
         print(f"An error occurred during database seeding: {e}")
@@ -155,3 +254,4 @@ if __name__ == "__main__":
     create_db_and_tables()
     
     seed_database()
+

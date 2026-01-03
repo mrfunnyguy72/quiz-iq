@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse
@@ -7,10 +8,12 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload, sessionmaker
 
 from app.core import irt as irt_engine
+from app.core.evaluation import is_answer_correct_fuzzy
 from app.core.security import get_password_hash
 from app.models.base import (
     Base,
     Item,
+    ItemTypeEnum,
     Response,
     SessionStatusEnum,
     TestSession,
@@ -171,6 +174,10 @@ async def get_next_question_htmx(session_id: int, request: Request, db: Session 
         "item_id": next_item.id,
         "text": next_item.question_text,
         "options": next_item.options,
+        "type": next_item.type,
+        "media_type": next_item.media_type,
+        "media_url": next_item.media_url,
+        "correct_option": next_item.correct_option,
     }
     return templates.TemplateResponse("partials/question_card.html", {
         "request": request,
@@ -184,7 +191,7 @@ async def submit_answer_htmx(
     session_id: int,
     request: Request,
     item_id: int = Form(...),
-    user_answer: str = Form(...),
+    user_answer: List[str] = Form(...),
     db: Session = Depends(get_db)
 ):
     """
@@ -198,7 +205,11 @@ async def submit_answer_htmx(
     if not item:
         raise HTTPException(status_code=404, detail="Item not found.")
 
-    is_correct = (user_answer == item.correct_option)
+    # Evaluation logic based on question type
+    if item.type == ItemTypeEnum.OPEN_ENDED:
+        is_correct = is_answer_correct_fuzzy(user_answer[0], item.correct_option[0])
+    else:  # Default to multiple choice
+        is_correct = (sorted(user_answer) == sorted(item.correct_option))
     
     previous_responses = db.execute(select(Response).options(joinedload(Response.item)).where(Response.session_id == session_id)).scalars().all()
     
@@ -217,7 +228,7 @@ async def submit_answer_htmx(
     db.add(Response(
         session_id=session.id,
         item_id=item.id,
-        user_answer=user_answer,
+        user_answer=", ".join(user_answer), # Store as comma-separated string
         is_correct=is_correct,
         theta_after=new_theta,
         response_time_sec=0,

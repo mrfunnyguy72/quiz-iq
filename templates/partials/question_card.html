@@ -4,7 +4,13 @@
 <div class="bg-gray-800 p-6 sm:p-8 rounded-lg shadow-xl w-full">
     
     <!-- Question Text -->
-    <h2 class="text-xl sm:text-2xl font-semibold mb-6 text-gray-100">{{ question.text }}</h2>
+    <h2 class="text-xl sm:text-2xl font-semibold mb-6 text-gray-100">
+        {% if question.media_type == 'html' %}
+            {{ question.text | safe }}
+        {% else %}
+            {{ question.text }}
+        {% endif %}
+    </h2>
     
     <!-- Answer Form -->
     <form 
@@ -16,23 +22,63 @@
         <!-- Hidden input to send the item_id with the answer -->
         <input type="hidden" name="item_id" value="{{ question.item_id }}">
 
-        <!-- Radio Button Options -->
-        {% for key, value in question.options.items() %}
-        <label 
-            for="option-{{ key }}" 
-            class="flex items-center p-4 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 border-2 border-transparent has-[:checked]:border-blue-500 has-[:checked]:bg-gray-900 transition-all"
-        >
-            <input 
-                type="radio" 
-                id="option-{{ key }}" 
+        <!-- Answer Input Section -->
+        {% if question.type.value == 'multiple_choice' %}
+            <!-- Hint for single/multiple answers -->
+            <p class="text-sm text-gray-400 mb-4">
+                {% if question.correct_option|length > 1 %}
+                    Select all that apply.
+                {% else %}
+                    Select one answer.
+                {% endif %}
+            </p>
+            {% if question.correct_option|length > 1 %}
+                <!-- Checkbox Options for multiple correct answers -->
+                {% for key, value in question.options.items() %}
+                <label 
+                    for="option-{{ key }}" 
+                    class="flex items-center p-4 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 border-2 border-transparent has-[:checked]:border-blue-500 has-[:checked]:bg-gray-900 transition-all"
+                >
+                    <input 
+                        type="checkbox" 
+                        id="option-{{ key }}" 
+                        name="user_answer" 
+                        value="{{ key }}" 
+                        class="h-4 w-4 text-blue-600 bg-gray-900 border-gray-500 focus:ring-blue-500 rounded"
+                    >
+                    <span class="ml-4 text-lg text-gray-300">{{ value }}</span>
+                </label>
+                {% endfor %}
+            {% else %}
+                <!-- Radio Button Options for single correct answer -->
+                {% for key, value in question.options.items() %}
+                <label 
+                    for="option-{{ key }}" 
+                    class="flex items-center p-4 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 border-2 border-transparent has-[:checked]:border-blue-500 has-[:checked]:bg-gray-900 transition-all"
+                >
+                    <input 
+                        type="radio" 
+                        id="option-{{ key }}" 
+                        name="user_answer" 
+                        value="{{ key }}" 
+                        class="h-4 w-4 text-blue-600 bg-gray-900 border-gray-500 focus:ring-blue-500"
+                        {% if loop.first %}required{% endif %}
+                    >
+                    <span class="ml-4 text-lg text-gray-300">{{ value }}</span>
+                </label>
+                {% endfor %}
+            {% endif %}
+        {% elif question.type.value == 'open_ended' %}
+            <!-- Text Area for Open-ended Questions -->
+            <textarea 
                 name="user_answer" 
-                value="{{ key }}" 
-                class="h-4 w-4 text-blue-600 bg-gray-900 border-gray-500 focus:ring-blue-500"
-                {% if loop.first %}required{% endif %}
-            >
-            <span class="ml-4 text-lg text-gray-300">{{ value }}</span>
-        </label>
-        {% endfor %}
+                rows="4"
+                class="w-full p-4 bg-gray-700 rounded-lg text-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Type your answer here..."
+                required
+            ></textarea>
+        {% endif %}
+
 
         <!-- Submit Button -->
         <div class="pt-4">

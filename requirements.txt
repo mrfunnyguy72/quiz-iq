@@ -9,3 +9,4 @@ python-multipart
 ruff
 passlib
 argon2-cffi
+rapidfuzz
